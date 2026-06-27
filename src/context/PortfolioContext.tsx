@@ -56,10 +56,11 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // Fetch portfolio data from Supabase on mount
   useEffect(() => {
     if (isSupabaseConfigured && supabase) {
+      const client = supabase;
       setLoading(true);
       const fetchData = async () => {
         try {
-          const { data: row, error } = await supabase
+          const { data: row, error } = await client
             .from('portfolio_state')
             .select('data')
             .eq('id', 'single_portfolio')
