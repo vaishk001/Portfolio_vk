@@ -99,42 +99,7 @@ function NeuralCanvas() {
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-60" />;
 }
 
-/* ─── Custom Cursor ─── */
-function CustomCursor() {
-  const dot = useRef<HTMLDivElement>(null);
-  const ring = useRef<HTMLDivElement>(null);
-  const pos = useRef({ x: 0, y: 0 });
-  const ringPos = useRef({ x: 0, y: 0 });
 
-  useEffect(() => {
-    const move = (e: MouseEvent) => {
-      pos.current = { x: e.clientX, y: e.clientY };
-      if (dot.current) {
-        dot.current.style.transform = `translate(${e.clientX - 4}px, ${e.clientY - 4}px)`;
-      }
-      const isHover = (e.target as HTMLElement)?.closest('a, button, [data-hover]');
-      ring.current?.classList.toggle('hover', !!isHover);
-    };
-    const animRing = () => {
-      ringPos.current.x += (pos.current.x - ringPos.current.x) * 0.12;
-      ringPos.current.y += (pos.current.y - ringPos.current.y) * 0.12;
-      if (ring.current) {
-        ring.current.style.transform = `translate(${ringPos.current.x - 18}px, ${ringPos.current.y - 18}px)`;
-      }
-      requestAnimationFrame(animRing);
-    };
-    window.addEventListener('mousemove', move);
-    animRing();
-    return () => window.removeEventListener('mousemove', move);
-  }, []);
-
-  return (
-    <>
-      <div ref={dot} className="cursor-dot" />
-      <div ref={ring} className="cursor-ring" />
-    </>
-  );
-}
 
 /* ─── Floating Code Card ─── */
 const FloatingCard = ({ delay, className, children }: { delay: number; className: string; children: React.ReactNode }) => (

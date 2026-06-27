@@ -57,24 +57,27 @@ export const PortfolioProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     if (isSupabaseConfigured && supabase) {
       setLoading(true);
-      supabase
-        .from('portfolio_state')
-        .select('data')
-        .eq('id', 'single_portfolio')
-        .single()
-        .then(({ data: row, error }) => {
+      const fetchData = async () => {
+        try {
+          const { data: row, error } = await supabase
+            .from('portfolio_state')
+            .select('data')
+            .eq('id', 'single_portfolio')
+            .single();
+
           if (row && row.data) {
             setData({ ...defaultData, ...row.data });
           } else if (error && error.code !== 'PGRST116') {
             // PGRST116 is standard Postgres code for '0 rows returned'
             console.error('Error fetching from Supabase:', error);
           }
-          setLoading(false);
-        })
-        .catch((err) => {
+        } catch (err: any) {
           console.error('Failed to fetch from Supabase:', err);
+        } finally {
           setLoading(false);
-        });
+        }
+      };
+      fetchData();
     }
   }, []);
 
