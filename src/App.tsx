@@ -10,6 +10,7 @@ import Projects from './components/Projects';
 import Experience from './components/Experience';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
+import { AIAssistant } from './components/AIAssistant';
 
 /* ── Global Custom Cursor ──────────────────────────────────────────────────── */
 function GlobalCursor() {
@@ -68,6 +69,7 @@ function Portfolio() {
         <Contact />
       </main>
       <Footer />
+      <AIAssistant />
     </div>
   );
 }
