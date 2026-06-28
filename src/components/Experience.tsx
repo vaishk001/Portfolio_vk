@@ -1,5 +1,5 @@
 import { motion, useInView } from 'framer-motion';
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Briefcase, Award, GraduationCap, MapPin, Clock, Trophy, Star, Code, Zap, Heart, Globe, ArrowUpRight } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import type { Achievement } from '../data/defaults';
@@ -118,10 +118,179 @@ const getCertColors = (title: string, issuer: string) => {
   };
 };
 
+/* ─── 3D Interactive Engineering Model Canvas ─── */
+function TechModelCanvas() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    let animId: number;
+    let width = canvas.width = 400;
+    let height = canvas.height = 400;
+    
+    // Create vertices for a 3D tesseract / double cube
+    interface Point3D { x: number; y: number; z: number }
+    const vertices: Point3D[] = [];
+    
+    const size1 = 80;
+    for (let x = -1; x <= 1; x += 2) {
+      for (let y = -1; y <= 1; y += 2) {
+        for (let z = -1; z <= 1; z += 2) {
+          vertices.push({ x: x * size1, y: y * size1, z: z * size1 });
+        }
+      }
+    }
+    
+    const size2 = 40;
+    for (let x = -1; x <= 1; x += 2) {
+      for (let y = -1; y <= 1; y += 2) {
+        for (let z = -1; z <= 1; z += 2) {
+          vertices.push({ x: x * size2, y: y * size2, z: z * size2 });
+        }
+      }
+    }
+    
+    const edges: [number, number][] = [];
+    
+    // Cube 1 edges
+    for (let i = 0; i < 8; i++) {
+      for (let j = i + 1; j < 8; j++) {
+        let diff = 0;
+        if (vertices[i].x !== vertices[j].x) diff++;
+        if (vertices[i].y !== vertices[j].y) diff++;
+        if (vertices[i].z !== vertices[j].z) diff++;
+        if (diff === 1) edges.push([i, j]);
+      }
+    }
+    
+    // Cube 2 edges
+    for (let i = 8; i < 16; i++) {
+      for (let j = i + 1; j < 16; j++) {
+        let diff = 0;
+        if (vertices[i].x !== vertices[j].x) diff++;
+        if (vertices[i].y !== vertices[j].y) diff++;
+        if (vertices[i].z !== vertices[j].z) diff++;
+        if (diff === 1) edges.push([i, j]);
+      }
+    }
+    
+    // Connecting edges
+    for (let i = 0; i < 8; i++) {
+      edges.push([i, i + 8]);
+    }
+    
+    let angleX = 0.006;
+    let angleY = 0.005;
+    
+    const rotate = (p: Point3D) => {
+      // Rotations on multiple axes
+      let cosX = Math.cos(angleX), sinX = Math.sin(angleX);
+      let y1 = p.y * cosX - p.z * sinX;
+      let z1 = p.z * cosX + p.y * sinX;
+      
+      let cosY = Math.cos(angleY), sinY = Math.sin(angleY);
+      let x2 = p.x * cosY + z1 * sinY;
+      let z2 = z1 * cosY - p.x * sinY;
+      
+      return { x: x2, y: y1, z: z2 };
+    };
+    
+    const resize = () => {
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      width = canvas.width = rect.width;
+      height = canvas.height = rect.height;
+    };
+    
+    window.addEventListener('resize', resize);
+    resize();
+    
+    const handleMouseMoveGlobal = (e: MouseEvent) => {
+      const x = (e.clientX / window.innerWidth) - 0.5;
+      const y = (e.clientY / window.innerHeight) - 0.5;
+      angleX = y * 0.04;
+      angleY = x * 0.04;
+    };
+    window.addEventListener('mousemove', handleMouseMoveGlobal);
+    
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      
+      // Update rotation
+      for (let i = 0; i < vertices.length; i++) {
+        vertices[i] = rotate(vertices[i]);
+      }
+      
+      const cx = width / 2;
+      const cy = height / 2;
+      const fov = 200;
+      
+      const project = (p: Point3D) => {
+        const distance = 240;
+        const scale = fov / (distance + p.z);
+        return {
+          x: cx + p.x * scale,
+          y: cy + p.y * scale,
+          z: p.z
+        };
+      };
+      
+      const projected = vertices.map(project);
+      
+      // Draw wires
+      ctx.shadowBlur = 0;
+      for (const [u, v] of edges) {
+        const p1 = projected[u];
+        const p2 = projected[v];
+        const avgZ = (p1.z + p2.z) / 2;
+        const opacity = Math.max(0.1, 1 - (avgZ + 80) / 160);
+        
+        ctx.beginPath();
+        ctx.moveTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.strokeStyle = `rgba(124, 58, 237, ${opacity * 0.25})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+      
+      // Draw nodes
+      for (let i = 0; i < projected.length; i++) {
+        const p = projected[i];
+        const opacity = Math.max(0.1, 1 - (p.z + 80) / 160);
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, i >= 8 ? 2 : 3.5, 0, Math.PI * 2);
+        ctx.fillStyle = i >= 8 ? `rgba(6, 182, 212, ${opacity})` : `rgba(168, 85, 247, ${opacity})`;
+        ctx.shadowColor = i >= 8 ? 'rgba(6, 182, 212, 0.6)' : 'rgba(168, 85, 247, 0.6)';
+        ctx.shadowBlur = 4;
+        ctx.fill();
+      }
+      
+      animId = requestAnimationFrame(draw);
+    };
+    
+    draw();
+    
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener('resize', resize);
+      window.removeEventListener('mousemove', handleMouseMoveGlobal);
+    };
+  }, []);
+  
+  return <canvas ref={canvasRef} className="w-full h-full min-h-[350px]" />;
+}
+
 const Experience = () => {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { data: { experience: { jobs, certifications, achievements } } } = usePortfolio();
+
+  // Active certification item index
+  const [activeCertIndex, setActiveCertIndex] = useState(0);
 
   // Parallax background illusion state
   const [bgOffset, setBgOffset] = useState({ x: 0, y: 0 });
@@ -164,6 +333,9 @@ const Experience = () => {
     el.style.borderColor = '';
   };
 
+  const activeCert = certifications[activeCertIndex] || certifications[0];
+  const activeColors = activeCert ? getCertColors(activeCert.title, activeCert.issuer) : getCertColors('', '');
+
   return (
     <section 
       id="experience" 
@@ -186,10 +358,6 @@ const Experience = () => {
         style={{ x: bgOffset.x * 2.2, y: bgOffset.y * 2.2 }}
         className="absolute bottom-1/4 right-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" 
       />
-      <motion.div 
-        style={{ x: bgOffset.x * 0.8, y: bgOffset.y * 0.8 }}
-        className="absolute top-1/2 left-1/3 w-72 h-72 bg-purple-500/5 rounded-full blur-3xl pointer-events-none" 
-      />
 
       <div className="max-w-6xl mx-auto relative z-10">
         {/* Header */}
@@ -206,9 +374,10 @@ const Experience = () => {
           <div className="section-line" />
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* Left Column: Jobs & Certifications */}
-          <div className="lg:col-span-3 space-y-14">
+        {/* Top Section: Experience & Achievements */}
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 mb-20">
+          {/* Left Column: Jobs */}
+          <div className="lg:col-span-3 space-y-8">
             {jobs.length > 0 && (
               <div>
                 <motion.h3
@@ -302,90 +471,10 @@ const Experience = () => {
                 </div>
               </div>
             )}
-
-            {/* Certifications - Fully redesigned 3D Glassmorphic Cards */}
-            {certifications.length > 0 && (
-              <div>
-                <motion.h3
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={isInView ? { opacity: 1, x: 0 } : {}}
-                  transition={{ delay: 0.4 }}
-                  className="flex items-center gap-3 text-lg font-bold text-white mb-6"
-                >
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-yellow-500 to-orange-500 flex items-center justify-center shadow-lg shadow-yellow-500/20">
-                    <Award className="w-4 h-4 text-white" />
-                  </div>
-                  Certifications
-                </motion.h3>
-                <div className="grid sm:grid-cols-2 gap-5">
-                  {certifications.map((cert, i) => {
-                    const colors = getCertColors(cert.title, cert.issuer);
-                    return (
-                      <motion.div
-                        key={cert.id}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={isInView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ delay: 0.5 + i * 0.08 }}
-                        className={`glass rounded-2xl p-6 border ${colors.border} cursor-pointer relative group overflow-hidden transition-all duration-300`}
-                        style={{
-                          transformStyle: 'preserve-3d',
-                          transition: 'transform 0.15s ease-out, box-shadow 0.25s ease, border-color 0.25s ease',
-                          willChange: 'transform',
-                          background: 'radial-gradient(350px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.06), transparent 70%), rgba(255, 255, 255, 0.02)',
-                          backdropFilter: 'blur(24px)',
-                        }}
-                        onMouseMove={(e) => handleCardMouseMove(e, colors.glow)}
-                        onMouseLeave={handleCardMouseLeave}
-                      >
-                        {/* 3D Highlight grid line inside */}
-                        <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100%_4px] pointer-events-none opacity-20" />
-                        
-                        <div style={{ transform: 'translateZ(30px)', transformStyle: 'preserve-3d' }}>
-                          <div className="flex items-start gap-4 mb-4">
-                            <div 
-                              className={`w-10 h-10 rounded-xl bg-gradient-to-br ${colors.badgeBg} flex items-center justify-center flex-shrink-0 mt-0.5 transition-all duration-300 group-hover:scale-110`}
-                              style={{ 
-                                transform: 'translateZ(45px)',
-                                boxShadow: colors.iconGlow,
-                              }}
-                            >
-                              <Award className={`w-5 h-5 ${colors.badgeText}`} />
-                            </div>
-                            <div className="flex-grow">
-                              <h4 className={`font-bold text-white text-[15px] leading-snug transition-colors group-hover:${colors.badgeText}`} style={{ transform: 'translateZ(40px)' }}>{cert.title}</h4>
-                              <p className="text-gray-400 text-xs mt-1 font-medium" style={{ transform: 'translateZ(35px)' }}>{cert.issuer}</p>
-                            </div>
-                          </div>
-                          
-                          <div className="flex items-center justify-between mt-6 pt-3 border-t border-white/5">
-                            <span className="code-font text-gray-500 text-xs font-semibold" style={{ transform: 'translateZ(30px)' }}>{cert.date}</span>
-                            <div className="flex items-center gap-3" style={{ transform: 'translateZ(35px)' }}>
-                              {cert.credential && (
-                                <span className="code-font text-[10px] text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded font-medium">{cert.credential}</span>
-                              )}
-                              {cert.url && (
-                                <a
-                                  href={cert.url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={`flex items-center gap-1 text-xs ${colors.badgeText} hover:brightness-125 transition-all code-font font-bold px-3 py-1.5 rounded-full bg-white/5 border border-white/10 hover:border-white/20`}
-                                >
-                                  View <ArrowUpRight className="w-3.5 h-3.5" />
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Right Column: Achievements & Stats Terminal */}
-          <div className="lg:col-span-2 space-y-12">
+          {/* Right Column: Achievements & Stats */}
+          <div className="lg:col-span-2 space-y-8">
             {achievements.length > 0 && (
               <div>
                 <motion.h3
@@ -496,6 +585,154 @@ const Experience = () => {
             )}
           </div>
         </div>
+
+        {/* Fully Redesigned Credentials Showcase Section with 3D Canvas Model Backdrop */}
+        {certifications.length > 0 && (
+          <div className="pt-12 border-t border-white/5">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.3 }}
+              className="mb-10 text-left"
+            >
+              <p className="code-font text-cyan-400 text-sm tracking-widest mb-2">// credentials validation</p>
+              <h3 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-3">
+                <Award className="w-6 h-6 text-yellow-400" /> Professional Certifications
+              </h3>
+            </motion.div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+              
+              {/* Left Selector Column (lg:col-span-5) */}
+              <div className="lg:col-span-5 flex flex-col gap-3 max-h-[460px] overflow-y-auto pr-2 custom-scrollbar">
+                {certifications.map((cert, index) => {
+                  const colors = getCertColors(cert.title, cert.issuer);
+                  const isActive = index === activeCertIndex;
+                  return (
+                    <motion.div
+                      key={cert.id}
+                      onClick={() => setActiveCertIndex(index)}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={isInView ? { opacity: 1, x: 0 } : {}}
+                      transition={{ delay: 0.4 + index * 0.08 }}
+                      className={`p-4 rounded-xl cursor-pointer border transition-all duration-300 relative overflow-hidden ${
+                        isActive 
+                          ? `${colors.border} bg-white/[0.05] shadow-lg shadow-violet-500/5` 
+                          : 'border-white/5 bg-transparent hover:bg-white/[0.02]'
+                      }`}
+                    >
+                      {/* Active marker left line */}
+                      {isActive && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-violet-500 to-cyan-400" />
+                      )}
+                      
+                      <div className="flex items-center gap-3 relative z-10">
+                        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${colors.badgeBg} flex items-center justify-center flex-shrink-0`}>
+                          <Award className={`w-4 h-4 ${colors.badgeText}`} />
+                        </div>
+                        <div className="flex-grow min-w-0">
+                          <h4 className={`text-sm font-semibold truncate ${isActive ? 'text-white' : 'text-gray-300'}`}>{cert.title}</h4>
+                          <p className="text-gray-500 text-xs truncate mt-0.5">{cert.issuer}</p>
+                        </div>
+                        <span className="code-font text-[10px] text-gray-500 whitespace-nowrap">{cert.date}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Right 3D Visualizer Display Column (lg:col-span-7) */}
+              <div className="lg:col-span-7">
+                <div className="relative h-[460px] w-full flex items-center justify-center rounded-2xl border border-white/5 bg-gray-900/10 backdrop-blur-md overflow-hidden shadow-2xl">
+                  
+                  {/* Rotating 3D Engineering Model Canvas in the background */}
+                  <div className="absolute inset-0 z-0 flex items-center justify-center opacity-65 pointer-events-none">
+                    <TechModelCanvas />
+                  </div>
+                  
+                  {/* Decorative Engineering Grid HUD labels */}
+                  <div className="absolute top-4 left-4 code-font text-[9px] text-gray-600 uppercase tracking-widest pointer-events-none select-none z-10">
+                    matrix: credentials_lab
+                  </div>
+                  <div className="absolute bottom-4 right-4 code-font text-[9px] text-gray-600 uppercase tracking-widest pointer-events-none select-none z-10">
+                    projection: 3D_hypercube
+                  </div>
+                  <div className="absolute top-4 right-4 code-font text-[9px] text-gray-600 uppercase tracking-widest pointer-events-none select-none z-10">
+                    status: online
+                  </div>
+
+                  {/* Glassmorphic 3D Card Display Case overlay */}
+                  {activeCert && (
+                    <motion.div
+                      key={activeCertIndex}
+                      initial={{ opacity: 0, scale: 0.9, y: 15 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      className={`relative z-10 max-w-md w-full mx-4 p-8 rounded-2xl border ${activeColors.border} shadow-2xl`}
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        transition: 'transform 0.15s ease-out, box-shadow 0.25s ease, border-color 0.25s ease',
+                        background: 'radial-gradient(350px circle at var(--mouse-x, 0px) var(--mouse-y, 0px), rgba(255, 255, 255, 0.08), transparent 70%), rgba(255, 255, 255, 0.03)',
+                        backdropFilter: 'blur(24px)',
+                      }}
+                      onMouseMove={(e) => handleCardMouseMove(e, activeColors.glow)}
+                      onMouseLeave={handleCardMouseLeave}
+                    >
+                      {/* Internal light glow lines */}
+                      <div className="absolute inset-0 bg-[linear-gradient(to_bottom,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:100%_6px] pointer-events-none opacity-20" />
+                      
+                      <div style={{ transform: 'translateZ(40px)', transformStyle: 'preserve-3d' }} className="space-y-6">
+                        
+                        <div className="flex items-center justify-between">
+                          <span className={`px-2.5 py-1 text-[10px] font-bold code-font tracking-wider rounded-md uppercase ${activeColors.badgeText} bg-white/5 border border-white/10`}>
+                            verified credential
+                          </span>
+                          <span className="code-font text-xs text-gray-500 font-semibold">{activeCert.date}</span>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <h3 className={`text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight group-hover:${activeColors.badgeText}`}>
+                            {activeCert.title}
+                          </h3>
+                          <p className="text-gray-400 text-sm font-medium">
+                            Issued by <span className={activeColors.badgeText}>{activeCert.issuer}</span>
+                          </p>
+                        </div>
+
+                        {activeCert.credential && (
+                          <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl code-font text-xs text-gray-500">
+                            <span className="text-gray-400 font-bold block mb-1">Credential Details:</span>
+                            {activeCert.credential}
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${activeColors.badgeBg} flex items-center justify-center`}>
+                              <Award className={`w-4 h-4 ${activeColors.badgeText}`} />
+                            </div>
+                            <span className="text-gray-500 text-xs font-semibold code-font">ID: {activeCert.id}</span>
+                          </div>
+                          
+                          {activeCert.url && (
+                            <a
+                              href={activeCert.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`flex items-center gap-1.5 text-xs ${activeColors.badgeText} hover:brightness-125 transition-all code-font font-bold px-4 py-2 rounded-full bg-white/5 border border-white/10 hover:border-white/20`}
+                            >
+                              Verify Credential <ArrowUpRight className="w-4 h-4" />
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );
