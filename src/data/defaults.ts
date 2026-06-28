@@ -59,7 +59,7 @@ export interface Achievement {
   id: string;
   title: string;
   description: string;
-  icon: 'award' | 'graduation' | 'briefcase';
+  icon: 'award' | 'graduation' | 'briefcase' | 'trophy' | 'star' | 'code' | 'zap' | 'heart' | 'globe';
 }
 
 export interface PortfolioData {

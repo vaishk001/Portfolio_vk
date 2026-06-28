@@ -119,9 +119,15 @@ export const ExperienceTab: React.FC = () => {
               <Field label="Title"><input className={inp} value={a.title} onChange={e => updateAch(a.id, 'title', e.target.value)} /></Field>
               <Field label="Icon">
                 <select className={inp} value={a.icon} onChange={e => updateAch(a.id, 'icon', e.target.value)}>
-                  <option value="award">🏆 Award</option>
+                  <option value="award">🏅 Award Medal</option>
                   <option value="graduation">🎓 Graduation</option>
                   <option value="briefcase">💼 Briefcase</option>
+                  <option value="trophy">🏆 Trophy</option>
+                  <option value="star">⭐ Star</option>
+                  <option value="code">💻 Code / Tech</option>
+                  <option value="zap">⚡ Lightning / Zap</option>
+                  <option value="heart">❤️ Heart / Community</option>
+                  <option value="globe">🌐 Globe / Public</option>
                 </select>
               </Field>
             </div>

@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { Briefcase, Award, GraduationCap, MapPin, Clock } from 'lucide-react';
+import { Briefcase, Award, GraduationCap, MapPin, Clock, Trophy, Star, Code, Zap, Heart, Globe } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import type { Achievement } from '../data/defaults';
 
@@ -8,18 +8,36 @@ const iconMap: Record<Achievement['icon'], React.ReactNode> = {
   award: <Award className="w-5 h-5" />,
   graduation: <GraduationCap className="w-5 h-5" />,
   briefcase: <Briefcase className="w-5 h-5" />,
+  trophy: <Trophy className="w-5 h-5" />,
+  star: <Star className="w-5 h-5" />,
+  code: <Code className="w-5 h-5" />,
+  zap: <Zap className="w-5 h-5" />,
+  heart: <Heart className="w-5 h-5" />,
+  globe: <Globe className="w-5 h-5" />,
 };
 
 const iconColors: Record<Achievement['icon'], string> = {
   award: 'from-yellow-500 to-orange-500',
   graduation: 'from-blue-500 to-cyan-500',
   briefcase: 'from-violet-500 to-purple-600',
+  trophy: 'from-amber-400 to-yellow-600',
+  star: 'from-yellow-400 to-amber-500',
+  code: 'from-cyan-500 to-blue-500',
+  zap: 'from-orange-400 to-red-600',
+  heart: 'from-rose-500 to-pink-600',
+  globe: 'from-teal-400 to-emerald-600',
 };
 
 const glowColors: Record<Achievement['icon'], string> = {
   award: 'rgba(234, 179, 8, 0.25)',
   graduation: 'rgba(6, 182, 212, 0.25)',
   briefcase: 'rgba(124, 58, 237, 0.25)',
+  trophy: 'rgba(245, 158, 11, 0.25)',
+  star: 'rgba(251, 191, 36, 0.25)',
+  code: 'rgba(6, 182, 212, 0.25)',
+  zap: 'rgba(239, 68, 68, 0.25)',
+  heart: 'rgba(244, 63, 94, 0.25)',
+  globe: 'rgba(20, 184, 166, 0.25)',
 };
 
 const Experience = () => {
