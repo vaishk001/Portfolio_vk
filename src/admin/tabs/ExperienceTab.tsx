@@ -106,7 +106,8 @@ export const ExperienceTab: React.FC = () => {
               <Field label="Credential ID (optional)"><input className={inp} value={c.credential ?? ''} onChange={e => updateCert(c.id, 'credential', e.target.value || null)} /></Field>
             </div>
             <Field label="Certificate Link / URL (optional)">
-              <input className={inp} value={c.url ?? ''} onChange={e => updateCert(c.id, 'url', e.target.value || null)} placeholder="https://..." />
+              <input className={inp} value={c.url ?? ''} onChange={e => updateCert(c.id, 'url', e.target.value || null)} placeholder="e.g., https://drive.google.com/... or /filename.pdf" />
+              <p className="text-xs text-gray-500 mt-1">Paste a Google Drive share link (set to "Anyone with link" → Viewer) OR put the PDF file inside your local <code>public/</code> folder and type <code>/filename.pdf</code>.</p>
             </Field>
           </div>
         ))}
