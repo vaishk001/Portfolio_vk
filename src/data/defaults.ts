@@ -82,7 +82,7 @@ export const defaultData: PortfolioData = {
     bio1: "I'm a 3rd-year B.Tech Computer Science & Design student with a strong foundation in software development and AI/ML. I specialize in creating scalable web applications using the MERN stack and React ecosystem.",
     bio2: "My approach combines clean code architecture, machine learning integrations, and user-focused design. I've worked on projects ranging from full-stack web applications to AI-powered tools, consistently delivering solutions that are both intelligent and scalable.",
     bio3: "Currently seeking software developer and AI/ML internship opportunities where I can contribute to impactful projects and continue growing as an engineer.",
-    photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    photoUrl: '/vk_image.jpg',
     location: 'India',
     email: 'your.email@example.com',
     github: 'https://github.com/yourusername',
