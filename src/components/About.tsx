@@ -3,11 +3,26 @@ import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Code2, Brain, Rocket, GraduationCap, MapPin, User } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
+import { VSCodeWindow } from './VSCodeWindow';
 
 const About = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { data: { personal: p } } = usePortfolio();
+
+  // Dynamic 3D tilt calculations for cards
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    el.style.transform = `perspective(1000px) rotateX(${-y / 25}deg) rotateY(${x / 25}deg) scale3d(1.02, 1.02, 1.02)`;
+  };
+
+  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    el.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)';
+  };
 
   const highlights = [
     {
@@ -15,21 +30,21 @@ const About = () => {
       title: 'Full-Stack Dev',
       description: 'MERN stack, Next.js, TypeScript — building end-to-end scalable apps',
       color: 'from-violet-600 to-purple-700',
-      glow: 'rgba(124,58,237,0.3)',
+      glow: 'rgba(124,58,237,0.2)',
     },
     {
       icon: <Brain className="w-6 h-6" />,
       title: 'AI/ML Engineer',
       description: 'Integrating intelligent models — NLP, Computer Vision, predictive APIs',
       color: 'from-cyan-500 to-blue-600',
-      glow: 'rgba(6,182,212,0.3)',
+      glow: 'rgba(6,182,212,0.2)',
     },
     {
       icon: <Rocket className="w-6 h-6" />,
       title: 'Product Thinker',
       description: 'Turning complex problems into clean, user-centric digital experiences',
       color: 'from-pink-500 to-rose-600',
-      glow: 'rgba(236,72,153,0.3)',
+      glow: 'rgba(236,72,153,0.2)',
     },
   ];
 
@@ -63,20 +78,26 @@ const About = () => {
 
         {/* Main Grid */}
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center mb-12 lg:mb-20">
-          {/* Left: Photo */}
+          {/* Left: Photo with 3D Tilt and Glow */}
           <motion.div
             initial={{ opacity: 0, x: -50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ delay: 0.2, duration: 0.7 }}
-            className="relative"
+            className="relative cursor-pointer"
+            style={{
+              transition: 'transform 0.15s ease-out',
+              willChange: 'transform',
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
           >
             {/* Decorative rings — hidden on small screens to avoid overflow */}
-            <div className="hidden lg:block absolute -top-6 -left-6 w-full h-full border border-violet-500/20 rounded-2xl" />
-            <div className="hidden lg:block absolute -bottom-6 -right-6 w-full h-full border border-cyan-500/20 rounded-2xl" />
+            <div className="hidden lg:block absolute -top-6 -left-6 w-full h-full border border-violet-500/20 rounded-2xl pointer-events-none" />
+            <div className="hidden lg:block absolute -bottom-6 -right-6 w-full h-full border border-cyan-500/20 rounded-2xl pointer-events-none" />
 
             {/* Gradient border wrapper */}
             <div className="gradient-border relative z-10">
-              <div className="rounded-2xl overflow-hidden">
+              <div className="rounded-2xl overflow-hidden relative">
                 <img
                   src={p.photoUrl}
                   alt={`${p.firstName} ${p.lastName}`}
@@ -97,7 +118,7 @@ const About = () => {
             <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-              className="absolute -top-4 -right-4 glass rounded-xl p-3 border border-violet-500/30 z-20"
+              className="absolute -top-4 -right-4 glass rounded-xl p-3 border border-violet-500/30 z-20 pointer-events-none"
             >
               <div className="flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -106,7 +127,7 @@ const About = () => {
             </motion.div>
           </motion.div>
 
-          {/* Right: Text */}
+          {/* Right: Text & Interactive VS Code Widget */}
           <motion.div
             initial={{ opacity: 0, x: 50 }}
             animate={isInView ? { opacity: 1, x: 0 } : {}}
@@ -138,20 +159,9 @@ const About = () => {
               ))}
             </div>
 
-            {/* Terminal snippet */}
-            <div className="glass rounded-xl p-4 border border-white/5 code-font text-xs space-y-1 mt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                <span className="text-gray-600 ml-2">vaishnavi.ts</span>
-              </div>
-              <div><span className="text-violet-400">const </span><span className="text-cyan-400">me</span><span className="text-white"> = {'{'}</span></div>
-              <div className="pl-4"><span className="text-white">name: </span><span className="text-green-400">"{p.firstName} {p.lastName}"</span>,</div>
-              <div className="pl-4"><span className="text-white">role: </span><span className="text-green-400">"Full-Stack + AI/ML"</span>,</div>
-              <div className="pl-4"><span className="text-white">passion: </span><span className="text-green-400">"Building cool stuff"</span>,</div>
-              <div className="pl-4"><span className="text-white">available: </span><span className="text-cyan-400">true</span></div>
-              <div><span className="text-white">{'}'}</span></div>
+            {/* Premium tabbed VS Code window mockup */}
+            <div className="pt-2">
+              <VSCodeWindow />
             </div>
           </motion.div>
         </div>
@@ -164,14 +174,13 @@ const About = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ delay: 0.7 + i * 0.15, duration: 0.5 }}
-              className="glass rounded-2xl p-6 border border-white/5 card-hover group"
-              style={{ '--glow': item.glow } as React.CSSProperties}
-              onMouseEnter={e => {
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 0 40px ${item.glow}`;
+              className="glass rounded-2xl p-6 border border-white/5 cursor-pointer"
+              style={{
+                transition: 'transform 0.15s ease-out, box-shadow 0.25s ease',
+                willChange: 'transform',
               }}
-              onMouseLeave={e => {
-                (e.currentTarget as HTMLElement).style.boxShadow = '';
-              }}
+              onMouseMove={handleMouseMove}
+              onMouseLeave={handleMouseLeave}
             >
               <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform`}>
                 {item.icon}
