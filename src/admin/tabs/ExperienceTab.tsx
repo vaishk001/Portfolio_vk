@@ -44,7 +44,7 @@ export const ExperienceTab: React.FC = () => {
     updateJob(id, k, raw.split('\n'));
 
   // ── Certs ─────────────────────────────────────────────────────
-  const addCert = () => setCerts(c => [...c, { id: genId(), title: '', issuer: '', date: '', credential: null }]);
+  const addCert = () => setCerts(c => [...c, { id: genId(), title: '', issuer: '', date: '', credential: null, url: '' }]);
   const updateCert = (id: string, k: keyof Certification, v: unknown) => setCerts(c => c.map(x => x.id === id ? { ...x, [k]: v } : x));
 
   // ── Achievements ──────────────────────────────────────────────
@@ -105,6 +105,9 @@ export const ExperienceTab: React.FC = () => {
               <Field label="Date"><input className={inp} value={c.date} onChange={e => updateCert(c.id, 'date', e.target.value)} placeholder="2024" /></Field>
               <Field label="Credential ID (optional)"><input className={inp} value={c.credential ?? ''} onChange={e => updateCert(c.id, 'credential', e.target.value || null)} /></Field>
             </div>
+            <Field label="Certificate Link / URL (optional)">
+              <input className={inp} value={c.url ?? ''} onChange={e => updateCert(c.id, 'url', e.target.value || null)} placeholder="https://..." />
+            </Field>
           </div>
         ))}
         {certs.length === 0 && <Empty text="No certifications yet" />}

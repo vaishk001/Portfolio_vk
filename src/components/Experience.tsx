@@ -1,6 +1,6 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { Briefcase, Award, GraduationCap, MapPin, Clock, Trophy, Star, Code, Zap, Heart, Globe } from 'lucide-react';
+import { Briefcase, Award, GraduationCap, MapPin, Clock, Trophy, Star, Code, Zap, Heart, Globe, ArrowUpRight } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import type { Achievement } from '../data/defaults';
 
@@ -226,9 +226,21 @@ const Experience = () => {
                         </div>
                         <div className="flex items-center justify-between mt-4 pt-2 border-t border-white/5">
                           <span className="code-font text-gray-500 text-xs" style={{ transform: 'translateZ(30px)' }}>{cert.date}</span>
-                          {cert.credential && (
-                            <span className="code-font text-gray-400 text-xs bg-white/5 px-2 py-0.5 rounded border border-white/5" style={{ transform: 'translateZ(35px)' }}>{cert.credential}</span>
-                          )}
+                          <div className="flex items-center gap-3" style={{ transform: 'translateZ(35px)' }}>
+                            {cert.credential && (
+                              <span className="code-font text-gray-400 text-xs bg-white/5 px-2 py-0.5 rounded border border-white/5">{cert.credential}</span>
+                            )}
+                            {cert.url && (
+                              <a
+                                href={cert.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-1 text-xs text-yellow-400 hover:text-yellow-300 transition-colors code-font hover:underline font-semibold"
+                              >
+                                View <ArrowUpRight className="w-3.5 h-3.5" />
+                              </a>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
