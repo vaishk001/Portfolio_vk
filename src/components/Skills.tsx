@@ -187,11 +187,27 @@ const Skills = () => {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ delay: 0.8 }}
-          className="mt-16 overflow-hidden"
+          className="mt-20 overflow-hidden relative"
         >
-          <div className="flex gap-6 animate-marquee whitespace-nowrap" style={{ animation: 'marquee 20s linear infinite' }}>
+          {/* Fade mask overlay */}
+          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-gray-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-gray-950 to-transparent z-10 pointer-events-none" />
+
+          {/* Marquee Row 1 (Moving Left) */}
+          <div className="flex gap-4 whitespace-nowrap py-2 w-max" style={{ animation: 'marquee 30s linear infinite' }}>
             {[...skills.flatMap(c => c.skills), ...skills.flatMap(c => c.skills)].map((s, i) => (
-              <span key={i} className="code-font text-gray-700 text-sm px-3 py-1 border border-white/5 rounded-full">
+              <span key={i} className="inline-flex items-center gap-2 code-font text-gray-300 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm">
+                <TechIcon name={s} className="w-3.5 h-3.5" />
+                {s}
+              </span>
+            ))}
+          </div>
+
+          {/* Marquee Row 2 (Moving Right) */}
+          <div className="flex gap-4 whitespace-nowrap py-2 mt-4 w-max" style={{ animation: 'marquee-reverse 35s linear infinite' }}>
+            {[...skills.flatMap(c => c.skills).reverse(), ...skills.flatMap(c => c.skills).reverse()].map((s, i) => (
+              <span key={i} className="inline-flex items-center gap-2 code-font text-gray-300 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm">
+                <TechIcon name={s} className="w-3.5 h-3.5" />
                 {s}
               </span>
             ))}
@@ -201,8 +217,12 @@ const Skills = () => {
 
       <style>{`
         @keyframes marquee {
-          from { transform: translateX(0); }
-          to { transform: translateX(-50%); }
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes marquee-reverse {
+          0% { transform: translateX(-50%); }
+          100% { transform: translateX(0); }
         }
       `}</style>
     </section>

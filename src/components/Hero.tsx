@@ -1,6 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, ArrowDown, Braces, Cpu, Layers, Zap } from 'lucide-react';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { 
+  Github, 
+  Linkedin, 
+  Mail, 
+  ArrowDown, 
+  Braces, 
+  Cpu, 
+  Layers, 
+  Zap,
+  Database,
+  Globe,
+  Terminal,
+  Code,
+  Flame
+} from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 
 /* ─── Typing Hook ─── */
@@ -99,16 +113,78 @@ function NeuralCanvas() {
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-60" />;
 }
 
+/* ─── Magnetic Wrapper Component ─── */
+interface MagneticProps {
+  children: React.ReactElement;
+  pull?: number;
+}
+const Magnetic: React.FC<MagneticProps> = ({ children, pull = 0.35 }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const springX = useSpring(x, { stiffness: 120, damping: 15, mass: 0.1 });
+  const springY = useSpring(y, { stiffness: 120, damping: 15, mass: 0.1 });
 
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const el = ref.current;
+    if (!el) return;
+    const { clientX, clientY } = e;
+    const { left, top, width, height } = el.getBoundingClientRect();
+    const centerX = left + width / 2;
+    const centerY = top + height / 2;
+    x.set((clientX - centerX) * pull);
+    y.set((clientY - centerY) * pull);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0);
+    y.set(0);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{ x: springX, y: springY }}
+      className="inline-block w-full sm:w-auto"
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 /* ─── Floating Code Card ─── */
-const FloatingCard = ({ delay, className, children }: { delay: number; className: string; children: React.ReactNode }) => (
+const FloatingCard = ({ delay, className, children, x, y }: { delay: number; className: string; children: React.ReactNode; x: any; y: any }) => (
   <motion.div
+    style={{ x, y }}
     animate={{ y: [0, -10, 0] }}
     transition={{ repeat: Infinity, duration: 3.5 + delay, ease: 'easeInOut', delay }}
-    className={`absolute glass rounded-xl px-4 py-3 border border-white/10 z-20 ${className}`}
+    className={`absolute glass rounded-xl px-4 py-3 border border-white/10 z-20 shadow-2xl shadow-black/40 ${className}`}
   >
     {children}
+  </motion.div>
+);
+
+/* ─── Floating Tech Icon Background Elements ─── */
+const FloatingTechIcon = ({ icon, delay, xLeft, yTop, x, y }: { icon: React.ReactNode; delay: number; xLeft: string; yTop: string; x: any; y: any }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ 
+      opacity: [0.4, 0.8, 0.4],
+      y: [0, -15, 0],
+      rotate: [0, 8, -8, 0]
+    }}
+    transition={{ 
+      repeat: Infinity, 
+      duration: 6 + delay, 
+      ease: 'easeInOut', 
+      delay 
+    }}
+    style={{ left: xLeft, top: yTop, x, y }}
+    className="absolute p-3 rounded-xl bg-gray-900/40 border border-white/5 backdrop-blur-md shadow-lg text-gray-500 hover:text-violet-400 hover:border-violet-500/20 hover:scale-110 transition-all duration-300 z-20 cursor-pointer pointer-events-auto"
+  >
+    {icon}
   </motion.div>
 );
 
@@ -130,11 +206,74 @@ const Hero = () => {
     { icon: <Zap className="w-4 h-4" />, label: 'Available', value: 'Now' },
   ];
 
+  // Mouse Parallax setup using framer-motion springs
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 80, damping: 20 });
+  const springY = useSpring(mouseY, { stiffness: 80, damping: 20 });
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    const x = clientX - innerWidth / 2;
+    const y = clientY - innerHeight / 2;
+    mouseX.set(x);
+    mouseY.set(y);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  // Parallax layers (deeper factor = less movement/deeper background)
+  const ringX = useTransform(springX, (val) => val * 0.05);
+  const ringY = useTransform(springY, (val) => val * 0.05);
+  
+  const visualX = useTransform(springX, (val) => val * 0.04);
+  const visualY = useTransform(springY, (val) => val * 0.04);
+
+  const card1X = useTransform(springX, (val) => val * 0.08);
+  const card1Y = useTransform(springY, (val) => val * 0.08);
+
+  const card2X = useTransform(springX, (val) => val * 0.06);
+  const card2Y = useTransform(springY, (val) => val * 0.06);
+
+  const card3X = useTransform(springX, (val) => val * 0.09);
+  const card3Y = useTransform(springY, (val) => val * 0.09);
+
+  const card4X = useTransform(springX, (val) => val * 0.05);
+  const card4Y = useTransform(springY, (val) => val * 0.05);
+
+  // Background items depth
+  const bgIcon1X = useTransform(springX, (val) => val * -0.04);
+  const bgIcon1Y = useTransform(springY, (val) => val * -0.04);
+  const bgIcon2X = useTransform(springX, (val) => val * -0.06);
+  const bgIcon2Y = useTransform(springY, (val) => val * -0.06);
+  const bgIcon3X = useTransform(springX, (val) => val * -0.05);
+  const bgIcon3Y = useTransform(springY, (val) => val * -0.05);
+  const bgIcon4X = useTransform(springX, (val) => val * -0.03);
+  const bgIcon4Y = useTransform(springY, (val) => val * -0.03);
+  const bgIcon5X = useTransform(springX, (val) => val * -0.07);
+  const bgIcon5Y = useTransform(springY, (val) => val * -0.07);
+
   return (
     <>
-      <section className="min-h-screen flex flex-col items-center justify-start relative overflow-hidden bg-gray-950 neural-bg">
+      <section 
+        className="min-h-screen flex flex-col items-center justify-start relative overflow-hidden bg-gray-950 neural-bg select-none"
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+      >
         {/* Neural Canvas Background */}
         <NeuralCanvas />
+
+        {/* Floating tech background icons with parallax */}
+        <FloatingTechIcon icon={<Code className="w-5 h-5" />} delay={0} xLeft="8%" yTop="20%" x={bgIcon1X} y={bgIcon1Y} />
+        <FloatingTechIcon icon={<Database className="w-5 h-5" />} delay={1.5} xLeft="12%" yTop="65%" x={bgIcon2X} y={bgIcon2Y} />
+        <FloatingTechIcon icon={<Cpu className="w-5 h-5" />} delay={3} xLeft="85%" yTop="18%" x={bgIcon3X} y={bgIcon3Y} />
+        <FloatingTechIcon icon={<Terminal className="w-5 h-5" />} delay={4.5} xLeft="78%" yTop="60%" x={bgIcon4X} y={bgIcon4Y} />
+        <FloatingTechIcon icon={<Globe className="w-5 h-5" />} delay={2.2} xLeft="45%" yTop="15%" x={bgIcon5X} y={bgIcon5Y} />
+        <FloatingTechIcon icon={<Flame className="w-4 h-4" />} delay={1.0} xLeft="55%" yTop="72%" x={bgIcon5X} y={bgIcon5Y} />
 
         {/* Ambient Glow Orbs */}
         <div className="absolute top-1/4 -left-32 w-96 h-96 bg-violet-600/20 rounded-full blur-3xl animate-blob pointer-events-none" />
@@ -150,7 +289,7 @@ const Hero = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-violet-500/30 text-violet-300 text-sm font-medium mb-8"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass border border-violet-500/30 text-violet-300 text-sm font-medium mb-8 shadow-lg shadow-violet-500/5"
               >
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75" />
@@ -198,19 +337,23 @@ const Hero = () => {
               {p.description}
             </motion.p>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons - Wrapped in Magnetic containers */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              className="flex flex-col sm:flex-row flex-wrap gap-3 mb-8 md:mb-10"
+              className="flex flex-col sm:flex-row flex-wrap gap-4 mb-8 md:mb-10"
             >
-              <a href="#projects" className="btn-primary w-full sm:w-auto px-8 py-3 md:py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2">
-                View My Work <span className="text-violet-200">→</span>
-              </a>
-              <a href="#contact" className="btn-secondary w-full sm:w-auto px-8 py-3 md:py-4 rounded-xl font-bold text-white text-center">
-                Let's Talk
-              </a>
+              <Magnetic pull={0.25}>
+                <a href="#projects" className="btn-primary w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2">
+                  View My Work <span className="text-violet-200">→</span>
+                </a>
+              </Magnetic>
+              <Magnetic pull={0.35}>
+                <a href="#contact" className="btn-secondary w-full sm:w-auto px-8 py-3.5 md:py-4 rounded-xl font-bold text-white text-center flex items-center justify-center">
+                  Let's Talk
+                </a>
+              </Magnetic>
             </motion.div>
 
             {/* Socials */}
@@ -220,48 +363,52 @@ const Hero = () => {
               transition={{ delay: 0.8 }}
               className="flex items-center gap-6"
             >
-              <span className="text-gray-600 text-xs code-font">find me on</span>
-              <a href={p.github} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-violet-400 transition-all duration-300 hover:scale-110" aria-label="GitHub">
+              <span className="text-gray-600 text-xs code-font font-medium uppercase tracking-wider">find me on</span>
+              <a href={p.github} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-violet-400 transition-all duration-300 hover:scale-120" aria-label="GitHub">
                 <Github className="w-5 h-5" />
               </a>
-              <a href={p.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-cyan-400 transition-all duration-300 hover:scale-110" aria-label="LinkedIn">
+              <a href={p.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-cyan-400 transition-all duration-300 hover:scale-120" aria-label="LinkedIn">
                 <Linkedin className="w-5 h-5" />
               </a>
-              <a href={`mailto:${p.email}`} className="text-gray-500 hover:text-violet-400 transition-all duration-300 hover:scale-110" aria-label="Email">
+              <a href={`mailto:${p.email}`} className="text-gray-500 hover:text-violet-400 transition-all duration-300 hover:scale-120" aria-label="Email">
                 <Mail className="w-5 h-5" />
               </a>
             </motion.div>
           </div>
 
-          {/* Right: Visual */}
+          {/* Right: Visual with Parallax layers */}
           <motion.div
             initial={{ opacity: 0, scale: 0.85 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.9, delay: 0.3 }}
             className="hidden lg:block relative h-[520px]"
+            style={{ x: visualX, y: visualY }}
           >
-            {/* Rotating rings */}
-            <div className="absolute inset-0 flex items-center justify-center">
+            {/* Rotating rings with parallax */}
+            <motion.div 
+              style={{ x: ringX, y: ringY }}
+              className="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
               <div className="w-80 h-80 border border-violet-500/20 rounded-full animate-spin-slow" />
               <div className="absolute w-56 h-56 border border-cyan-500/20 rounded-full animate-spin-slow-r" />
               <div className="absolute w-36 h-36 border border-violet-500/30 rounded-full animate-spin-slow" />
               {/* Center glow */}
               <div className="absolute w-20 h-20 bg-gradient-to-br from-violet-600 to-cyan-500 rounded-full blur-xl opacity-60 animate-float" />
               <div className="absolute w-12 h-12 bg-gradient-to-br from-violet-500 to-cyan-400 rounded-full" style={{ boxShadow: '0 0 30px rgba(124,58,237,0.8)' }} />
-            </div>
+            </motion.div>
 
-            {/* Floating code cards */}
-            <FloatingCard delay={0} className="top-8 right-4 w-56">
+            {/* Floating code cards with individual spring parallax offsets */}
+            <FloatingCard delay={0} className="top-8 right-4 w-56" x={card1X} y={card1Y}>
               <div className="code-font text-xs space-y-1">
-                <div className="text-violet-400">const <span className="text-cyan-400">stack</span> = {'{'}</div>
+                <div className="text-violet-400 font-semibold">const <span className="text-cyan-400">stack</span> = {'{'}</div>
                 <div className="pl-2 text-gray-300">frontend: <span className="text-green-400">'React'</span>,</div>
                 <div className="pl-2 text-gray-300">backend: <span className="text-green-400">'Node.js'</span>,</div>
                 <div className="pl-2 text-gray-300">ai: <span className="text-green-400">'Python'</span></div>
-                <div className="text-violet-400">{'}'}</div>
+                <div className="text-violet-400 font-semibold">{'}'}</div>
               </div>
             </FloatingCard>
 
-            <FloatingCard delay={1.2} className="bottom-20 right-0 w-52">
+            <FloatingCard delay={1.2} className="bottom-20 right-0 w-52" x={card2X} y={card2Y}>
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">AI</span>
@@ -276,18 +423,18 @@ const Hero = () => {
               </div>
             </FloatingCard>
 
-            <FloatingCard delay={0.6} className="bottom-8 left-4 w-48">
+            <FloatingCard delay={0.6} className="bottom-8 left-4 w-48" x={card3X} y={card3Y}>
               <div className="code-font text-xs space-y-1">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-                  <span className="text-green-400">Build passing</span>
+                  <span className="text-green-400 font-semibold">Build passing</span>
                 </div>
                 <div className="text-gray-500">Tests: <span className="text-cyan-400">47/47</span></div>
                 <div className="text-gray-500">Coverage: <span className="text-violet-400">98%</span></div>
               </div>
             </FloatingCard>
 
-            <FloatingCard delay={1.8} className="top-24 left-2 w-44">
+            <FloatingCard delay={1.8} className="top-24 left-2 w-44" x={card4X} y={card4Y}>
               <div className="text-xs space-y-1">
                 <div className="code-font text-violet-400 text-xs mb-1">npm run dev</div>
                 <div className="flex items-center gap-2">
@@ -299,7 +446,7 @@ const Hero = () => {
           </motion.div>
         </div>
 
-        {/* Stats Bar — in flow, centered below content */}
+        {/* Stats Bar */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

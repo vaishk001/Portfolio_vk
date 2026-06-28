@@ -55,12 +55,29 @@ function GlobalCursor() {
   );
 }
 
+/* ── Liquid Moving Gradient Background ── */
+function LiquidBackground() {
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+      {/* Large animated fluid orbs */}
+      <div className="absolute top-[5%] left-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-violet-600/10 to-indigo-600/10 blur-[130px] animate-[float-slow_25s_infinite_ease-in-out]" />
+      <div className="absolute top-[35%] right-[-20%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-cyan-500/8 to-blue-500/8 blur-[150px] animate-[float-slow_30s_infinite_ease-in-out_2s]" />
+      <div className="absolute bottom-[30%] left-[-25%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-tr from-purple-500/5 to-pink-500/5 blur-[130px] animate-[float-slow_28s_infinite_ease-in-out_4s]" />
+      <div className="absolute bottom-[5%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-emerald-500/5 to-teal-500/5 blur-[130px] animate-[float-slow_22s_infinite_ease-in-out_1s]" />
+    </div>
+  );
+}
+
 /* ── Portfolio page ── */
 function Portfolio() {
   return (
-    <div className="min-h-screen bg-gray-950 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-950 overflow-x-hidden relative">
+      {/* Global Noise & Liquid Backdrop */}
+      <div className="noise-overlay" />
+      <LiquidBackground />
+
       <Header />
-      <main>
+      <main className="relative z-10">
         <Hero />
         <About />
         <Skills />
