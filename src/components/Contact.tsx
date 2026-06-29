@@ -3,6 +3,7 @@ import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
 import { Mail, Linkedin, Github, MapPin, Send, ArrowRight, Sparkles } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
+import { supabase, isSupabaseConfigured } from '../context/supabase';
 
 const Contact = () => {
   const ref = useRef(null);
@@ -15,11 +16,44 @@ const Contact = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    await new Promise(r => setTimeout(r, 1500));
-    setSubmitted(true);
-    setFormData({ name: '', email: '', subject: '', message: '' });
-    setIsSubmitting(false);
-    setTimeout(() => setSubmitted(false), 4000);
+    try {
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase
+          .from('contact_messages')
+          .insert([
+            {
+              name: formData.name,
+              email: formData.email,
+              subject: formData.subject,
+              message: formData.message,
+            }
+          ]);
+        
+        if (error) throw error;
+      } else {
+        // LocalStorage fallback
+        const existingRaw = localStorage.getItem('vk_contact_messages');
+        const existing = existingRaw ? JSON.parse(existingRaw) : [];
+        const newMessage = {
+          id: `msg_${Date.now()}`,
+          name: formData.name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          created_at: new Date().toISOString(),
+        };
+        localStorage.setItem('vk_contact_messages', JSON.stringify([newMessage, ...existing]));
+      }
+
+      setSubmitted(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      setTimeout(() => setSubmitted(false), 5000);
+    } catch (err: any) {
+      console.error('Failed to submit message:', err);
+      alert('Failed to send message: ' + (err.message || err));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>

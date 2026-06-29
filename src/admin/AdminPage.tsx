@@ -5,16 +5,18 @@ import { ProjectsTab } from './tabs/ProjectsTab';
 import { SkillsTab } from './tabs/SkillsTab';
 import { ExperienceTab } from './tabs/ExperienceTab';
 import { SettingsTab } from './tabs/SettingsTab';
+import { MessagesTab } from './tabs/MessagesTab';
 import { usePortfolio } from '../context/PortfolioContext';
-import { User, FolderGit2, Wrench, Briefcase, Settings, LogOut, ChevronRight } from 'lucide-react';
+import { User, FolderGit2, Wrench, Briefcase, Settings, LogOut, ChevronRight, MessageSquare } from 'lucide-react';
 
-type Tab = 'personal' | 'projects' | 'skills' | 'experience' | 'settings';
+type Tab = 'personal' | 'projects' | 'skills' | 'experience' | 'messages' | 'settings';
 
 const NAV: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'personal',   label: 'Personal Info',  icon: <User className="w-4 h-4" /> },
   { id: 'projects',   label: 'Projects',        icon: <FolderGit2 className="w-4 h-4" /> },
   { id: 'skills',     label: 'Skills',          icon: <Wrench className="w-4 h-4" /> },
   { id: 'experience', label: 'Experience',      icon: <Briefcase className="w-4 h-4" /> },
+  { id: 'messages',   label: 'Messages',        icon: <MessageSquare className="w-4 h-4" /> },
   { id: 'settings',   label: 'Settings',        icon: <Settings className="w-4 h-4" /> },
 ];
 
@@ -73,6 +75,7 @@ export const AdminPage: React.FC = () => {
           {tab === 'projects'   && <ProjectsTab />}
           {tab === 'skills'     && <SkillsTab />}
           {tab === 'experience' && <ExperienceTab />}
+          {tab === 'messages'   && <MessagesTab />}
           {tab === 'settings'   && <SettingsTab />}
         </div>
       </main>
