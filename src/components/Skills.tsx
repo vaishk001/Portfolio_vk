@@ -4,33 +4,60 @@ import { useRef, useState } from 'react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { TechIcon } from './TechIcon';
 
-const categoryIcons: Record<string, string> = {
-  'Frontend': '⚛️',
-  'Backend': '⚙️',
-  'Databases': '🗄️',
-  'DevOps & Tools': '🛠️',
-  'Cybersecurity': '🔐',
-  'AI/ML': '🤖',
+const colorMap: Record<string, { from: string; to: string; border: string; glow: string; text: string }> = {
+  'text-blue-500': { from: 'from-blue-600', to: 'to-cyan-500', border: 'border-blue-500/30', glow: 'rgba(59,130,246,0.15)', text: 'text-blue-400' },
+  'text-green-500': { from: 'from-green-600', to: 'to-emerald-500', border: 'border-green-500/30', glow: 'rgba(34,197,94,0.15)', text: 'text-green-400' },
+  'text-purple-500': { from: 'from-purple-600', to: 'to-violet-500', border: 'border-purple-500/30', glow: 'rgba(168,85,247,0.15)', text: 'text-purple-400' },
+  'text-orange-500': { from: 'from-orange-600', to: 'to-amber-500', border: 'border-orange-500/30', glow: 'rgba(249,115,22,0.15)', text: 'text-orange-400' },
+  'text-red-500': { from: 'from-red-600', to: 'to-rose-500', border: 'border-red-500/30', glow: 'rgba(239,68,68,0.15)', text: 'text-red-400' },
+  'text-cyan-500': { from: 'from-cyan-600', to: 'to-teal-500', border: 'border-cyan-500/30', glow: 'rgba(6,182,212,0.15)', text: 'text-cyan-400' },
+  'text-yellow-500': { from: 'from-yellow-600', to: 'to-amber-500', border: 'border-yellow-500/30', glow: 'rgba(234,179,8,0.15)', text: 'text-yellow-400' },
+  'text-pink-500': { from: 'from-pink-600', to: 'to-fuchsia-500', border: 'border-pink-500/30', glow: 'rgba(236,72,153,0.15)', text: 'text-pink-400' },
 };
 
-const categoryColors: Record<string, { from: string; to: string; border: string; glow: string }> = {
-  'Frontend': { from: 'from-blue-600', to: 'to-cyan-500', border: 'border-blue-500/30', glow: 'rgba(59,130,246,0.2)' },
-  'Backend': { from: 'from-green-600', to: 'to-emerald-500', border: 'border-green-500/30', glow: 'rgba(34,197,94,0.2)' },
-  'Databases': { from: 'from-purple-600', to: 'to-violet-500', border: 'border-purple-500/30', glow: 'rgba(168,85,247,0.2)' },
-  'DevOps & Tools': { from: 'from-orange-600', to: 'to-amber-500', border: 'border-orange-500/30', glow: 'rgba(249,115,22,0.2)' },
-  'Cybersecurity': { from: 'from-red-600', to: 'to-rose-500', border: 'border-red-500/30', glow: 'rgba(239,68,68,0.2)' },
-  'AI/ML': { from: 'from-pink-600', to: 'to-fuchsia-500', border: 'border-pink-500/30', glow: 'rgba(236,72,153,0.2)' },
+const getCategoryColors = (colorClass: string) => {
+  return colorMap[colorClass] || colorMap['text-blue-500'];
+};
+
+const getCategoryIcon = (title: string): string => {
+  const t = title.toLowerCase();
+  if (t.includes('front')) return '⚛️';
+  if (t.includes('back')) return '⚙️';
+  if (t.includes('data')) return '🗄️';
+  if (t.includes('devops') || t.includes('tool')) return '🛠️';
+  if (t.includes('cyber') || t.includes('security') || t.includes('protect')) return '🔐';
+  if (t.includes('ai') || t.includes('ml') || t.includes('machine') || t.includes('intell') || t.includes('learn')) return '🤖';
+  if (t.includes('design') || t.includes('ui') || t.includes('ux') || t.includes('graphic')) return '🎨';
+  if (t.includes('cloud') || t.includes('aws') || t.includes('infra') || t.includes('server')) return '☁️';
+  return '💻';
 };
 
 const getSkillStats = (name: string) => {
   const norm = name.toLowerCase();
-  if (/react|typescript|javascript|node|express|python|mongodb/i.test(norm)) {
+  if (/react|typescript|javascript|node|express|python|mongodb|next|django/i.test(norm)) {
     return { level: 'Expert', percent: 90, status: 'Production Ready' };
   }
-  if (/next|postgres|redis|sqlite|tailwind|docker|git/i.test(norm)) {
+  if (/postgres|redis|sqlite|tailwind|docker|git|supabase|mysql|firebase/i.test(norm)) {
     return { level: 'Advanced', percent: 80, status: 'Active Use' };
   }
   return { level: 'Proficient', percent: 70, status: 'Active Study' };
+};
+
+const getGridClasses = (count: number) => {
+  if (count === 1) return 'grid-cols-1 max-w-xl mx-auto';
+  if (count === 2) return 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto';
+  if (count === 3) return 'grid-cols-1 md:grid-cols-3';
+  if (count === 4) return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4';
+  return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
+};
+
+const getMarqueeItems = (list: string[]) => {
+  if (list.length === 0) return [];
+  let repeated = [...list];
+  while (repeated.length < 24) {
+    repeated = [...repeated, ...list];
+  }
+  return [...repeated, ...repeated];
 };
 
 const Skills = () => {
@@ -82,9 +109,9 @@ const Skills = () => {
         </motion.div>
 
         {/* Skill Cards */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className={`grid gap-6 ${getGridClasses(skills.length)}`}>
           {skills.map((cat, idx) => {
-            const colors = categoryColors[cat.title] || categoryColors['Frontend'];
+            const colors = getCategoryColors(cat.color);
             return (
               <motion.div
                 key={cat.id}
@@ -100,15 +127,18 @@ const Skills = () => {
                 onMouseLeave={handleMouseLeave}
               >
                 {/* Card Header */}
-                <div className={`p-5 border-b border-white/5 bg-gradient-to-r ${colors.from} ${colors.to} bg-opacity-10`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">{categoryIcons[cat.title] || '💻'}</span>
+                <div className={`p-5 border-b border-white/5 bg-gradient-to-r ${colors.from} ${colors.to} bg-opacity-10 relative overflow-hidden`}>
+                  {/* Subtle Grid overlay inside header */}
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] [background-size:8px_8px] pointer-events-none" />
+                  
+                  <div className="flex items-center gap-3 relative z-10">
+                    <span className="text-2xl">{getCategoryIcon(cat.title)}</span>
                     <div>
-                      <h3 className="font-bold text-white text-lg">{cat.title}</h3>
-                      <p className="text-white/60 text-xs">{cat.skills.length} technologies</p>
+                      <h3 className="font-bold text-white text-lg tracking-tight">{cat.title}</h3>
+                      <p className="text-white/60 text-xs font-mono">{cat.skills.length} technologies</p>
                     </div>
                     {/* Animated HUD indicator */}
-                    <div className="ml-auto flex gap-1">
+                    <div className="ml-auto flex gap-1.5">
                       {[...Array(3)].map((_, i) => (
                         <div
                           key={i}
@@ -121,8 +151,11 @@ const Skills = () => {
                 </div>
 
                 {/* Skills Grid */}
-                <div className="p-5 flex-grow">
-                  <div className="flex flex-wrap gap-2.5">
+                <div className="p-5 flex-grow relative">
+                  {/* Grid background */}
+                  <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.015)_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none" />
+                  
+                  <div className="flex flex-wrap gap-2.5 relative z-10">
                     {cat.skills.map((skill, i) => (
                       <motion.span
                         key={i}
@@ -145,15 +178,15 @@ const Skills = () => {
                 </div>
 
                 {/* Interactive HUD Analyzer */}
-                <div className="px-5 pb-5 pt-3 border-t border-white/5 bg-gray-950/40 min-h-[78px] flex flex-col justify-center rounded-b-2xl">
+                <div className="px-5 pb-5 pt-3 border-t border-white/5 bg-gray-950/60 min-h-[82px] flex flex-col justify-center rounded-b-2xl relative">
                   {hoveredSkill && cat.skills.includes(hoveredSkill) ? (
                     (() => {
                       const stats = getSkillStats(hoveredSkill);
                       return (
-                        <div className="space-y-1.5 transition-all duration-300">
+                        <div className="space-y-2 transition-all duration-300 relative z-10">
                           <div className="flex justify-between text-[11px] font-mono">
                             <span className="text-gray-400">ANALYZING: <span className="text-white font-bold">{hoveredSkill}</span></span>
-                            <span className="text-cyan-400 font-semibold">{stats.level} ({stats.percent}%)</span>
+                            <span className={`${colors.text} font-semibold`}>{stats.level} ({stats.percent}%)</span>
                           </div>
                           {/* Progress bar */}
                           <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
@@ -172,8 +205,12 @@ const Skills = () => {
                       );
                     })()
                   ) : (
-                    <div className="text-center py-2 text-gray-600 text-[10px] font-mono tracking-wider">
-                      // HOVER NODE TO VIEW DIAGNOSTIC DATA
+                    <div className="flex flex-col items-center justify-center py-1 text-gray-600 text-[10px] font-mono tracking-wider space-y-1 relative z-10">
+                      <div className="flex items-center gap-1.5">
+                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500/70 animate-ping" />
+                        <span>SYSTEMS_READY: STANDBY</span>
+                      </div>
+                      <span className="opacity-50 text-[9px]">// HOVER NODE FOR REAL-TIME DIAGNOSTICS</span>
                     </div>
                   )}
                 </div>
@@ -187,27 +224,27 @@ const Skills = () => {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ delay: 0.8 }}
-          className="mt-20 overflow-hidden relative"
+          className="mt-24 overflow-hidden relative py-4"
         >
           {/* Fade mask overlay */}
-          <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-gray-950 to-transparent z-10 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-gray-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-gray-950 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-gray-950 to-transparent z-10 pointer-events-none" />
 
           {/* Marquee Row 1 (Moving Left) */}
-          <div className="flex gap-4 whitespace-nowrap py-2 w-max" style={{ animation: 'marquee 30s linear infinite' }}>
-            {[...skills.flatMap(c => c.skills), ...skills.flatMap(c => c.skills)].map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-2 code-font text-gray-300 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm">
-                <TechIcon name={s} className="w-3.5 h-3.5" />
+          <div className="flex gap-4 whitespace-nowrap py-1 w-max" style={{ animation: 'marquee 40s linear infinite' }}>
+            {getMarqueeItems(skills.flatMap(c => c.skills)).map((s, i) => (
+              <span key={i} className="inline-flex items-center gap-2.5 code-font text-gray-300 bg-white/5 border border-white/10 rounded-full px-5 py-2 backdrop-blur-md shadow-sm transition-all duration-300 hover:border-cyan-500/40 hover:bg-white/10 hover:text-white hover:scale-105">
+                <TechIcon name={s} className="w-4 h-4" />
                 {s}
               </span>
             ))}
           </div>
 
           {/* Marquee Row 2 (Moving Right) */}
-          <div className="flex gap-4 whitespace-nowrap py-2 mt-4 w-max" style={{ animation: 'marquee-reverse 35s linear infinite' }}>
-            {[...skills.flatMap(c => c.skills).reverse(), ...skills.flatMap(c => c.skills).reverse()].map((s, i) => (
-              <span key={i} className="inline-flex items-center gap-2 code-font text-gray-300 bg-white/5 border border-white/10 rounded-full px-4 py-1.5 backdrop-blur-md shadow-sm">
-                <TechIcon name={s} className="w-3.5 h-3.5" />
+          <div className="flex gap-4 whitespace-nowrap py-1 mt-5 w-max" style={{ animation: 'marquee-reverse 45s linear infinite' }}>
+            {getMarqueeItems(skills.flatMap(c => c.skills).reverse()).map((s, i) => (
+              <span key={i} className="inline-flex items-center gap-2.5 code-font text-gray-300 bg-white/5 border border-white/10 rounded-full px-5 py-2 backdrop-blur-md shadow-sm transition-all duration-300 hover:border-violet-500/40 hover:bg-white/10 hover:text-white hover:scale-105">
+                <TechIcon name={s} className="w-4 h-4" />
                 {s}
               </span>
             ))}
