@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase, isSupabaseConfigured } from '../../context/supabase';
-import { Trash2, Mail, Calendar, User, Clock, Inbox } from 'lucide-react';
+import { Trash2, Mail, Calendar, User, Inbox } from 'lucide-react';
 
 interface ContactMessage {
   id: string;
