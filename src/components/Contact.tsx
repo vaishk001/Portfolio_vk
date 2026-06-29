@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef, useState } from 'react';
-import { Mail, Linkedin, Github, MapPin, Send, ArrowRight, Sparkles } from 'lucide-react';
+import { Mail, Linkedin, Github, MapPin, Send, ArrowRight, Sparkles, RefreshCw, ShieldCheck } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { supabase, isSupabaseConfigured } from '../context/supabase';
-import { ScratchConnectCard } from './ScratchConnectCard';
 
 const Contact = () => {
   const ref = useRef(null);
@@ -13,6 +12,8 @@ const Contact = () => {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(false);
+  const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,6 +61,18 @@ const Contact = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  const handleCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left - rect.width / 2;
+    const y = e.clientY - rect.top - rect.height / 2;
+    setTilt({ x: -y / 20, y: x / 20 });
+  };
+
+  const handleCardMouseLeave = () => {
+    setTilt({ x: 0, y: 0 });
+  };
+
   const contactLinks = [
     { icon: <Mail className="w-5 h-5" />, label: 'Email', value: p.email, href: `mailto:${p.email}`, color: 'from-red-500 to-orange-500', glow: 'rgba(239,68,68,0.3)' },
     { icon: <Linkedin className="w-5 h-5" />, label: 'LinkedIn', value: 'Connect with me', href: p.linkedin, color: 'from-blue-500 to-cyan-500', glow: 'rgba(59,130,246,0.3)' },
@@ -81,216 +94,297 @@ const Contact = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-12"
         >
           <p className="code-font text-cyan-400 text-sm tracking-widest mb-3">// let's collaborate</p>
           <h2 className="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-4">
             Get In <span className="gradient-text-static">Touch</span>
           </h2>
           <div className="section-line" />
-          <p className="mt-6 text-gray-500 max-w-2xl mx-auto text-lg">
-            Have a project idea? Want to collaborate? Or just want to say hi?
-            <span className="text-violet-400"> My inbox is always open.</span>
-          </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-start">
-          {/* Left: Links + Status */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.2, duration: 0.6 }}
-            className="lg:col-span-2 space-y-4"
+        {/* 3D Flip Card Container */}
+        <div 
+          className="w-full relative mx-auto"
+          style={{ perspective: 2000 }}
+        >
+          <div
+            className="w-full relative transition-all duration-700 ease-[cubic-bezier(0.4,0,0.2,1)]"
+            style={{
+              transformStyle: 'preserve-3d',
+              transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
+            }}
           >
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.25 }}
+            {/* FRONT FACE: Invitation Card */}
+            <div
+              className={`w-full ${!isFlipped ? 'relative' : 'absolute inset-0 pointer-events-none'}`}
+              style={{
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                zIndex: isFlipped ? 0 : 10,
+              }}
             >
-              <ScratchConnectCard />
-            </motion.div>
-
-            {contactLinks.map((item, i) => (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                transition={{ delay: 0.3 + i * 0.1 }}
+                onClick={() => setIsFlipped(true)}
+                onMouseMove={handleCardMouseMove}
+                onMouseLeave={handleCardMouseLeave}
+                style={{
+                  transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg) scale3d(1.01, 1.01, 1.01)`,
+                  transition: 'transform 0.15s ease-out',
+                }}
+                className="w-full max-w-3xl mx-auto glass rounded-3xl border border-white/10 p-8 sm:p-16 text-center cursor-pointer relative overflow-hidden group select-none shadow-2xl"
               >
-                {item.href ? (
-                  <a
-                    href={item.href}
-                    target={item.href.startsWith('http') ? '_blank' : undefined}
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-4 p-4 glass rounded-xl border border-white/5 hover:border-violet-500/30 transition-all card-hover group"
-                    onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 30px ${item.glow}`)}
-                    onMouseLeave={e => (e.currentTarget.style.boxShadow = '')}
-                  >
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform`}>
-                      {item.icon}
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
-                      <p className="text-white font-semibold text-sm">{item.value}</p>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-violet-400 ml-auto transition-colors" />
-                  </a>
-                ) : (
-                  <div className="flex items-center gap-4 p-4 glass rounded-xl border border-white/5">
-                    <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white flex-shrink-0`}>
-                      {item.icon}
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
-                      <p className="text-white font-semibold text-sm">{item.value}</p>
+                {/* Glowing neon mesh backgrounds */}
+                <div className="absolute -top-24 -left-24 w-64 h-64 bg-violet-600/20 rounded-full blur-3xl group-hover:bg-violet-600/30 transition-colors" />
+                <div className="absolute -bottom-24 -right-24 w-64 h-64 bg-cyan-500/20 rounded-full blur-3xl group-hover:bg-cyan-500/30 transition-colors" />
+
+                {/* Interactive HUD lines */}
+                <div className="absolute top-4 left-6 code-font text-[9px] text-gray-600 uppercase tracking-widest pointer-events-none">
+                  status: awaiting connection
+                </div>
+                <div className="absolute bottom-4 right-6 code-font text-[9px] text-gray-600 uppercase tracking-widest pointer-events-none">
+                  channel: secure_tls_v1.3
+                </div>
+
+                <div className="relative z-10 space-y-6 sm:space-y-8 py-6">
+                  {/* Glowing floating envelope icon */}
+                  <div className="flex justify-center">
+                    <div className="relative">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-violet-600 to-cyan-500 flex items-center justify-center text-white shadow-xl shadow-violet-500/20 animate-pulse">
+                        <Send className="w-8 h-8 sm:w-10 sm:h-10 transform -rotate-12 translate-x-0.5 -translate-y-0.5" />
+                      </div>
+                      <div className="absolute -inset-2 rounded-full border border-violet-500/30 animate-ping pointer-events-none" />
                     </div>
                   </div>
-                )}
+
+                  <div className="space-y-3 sm:space-y-4">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full code-font text-xs text-violet-300 bg-violet-900/30 border border-violet-500/25">
+                      <Sparkles className="w-3.5 h-3.5 animate-spin-slow" /> Establish Connection
+                    </span>
+                    <h3 className="text-4xl sm:text-5xl font-display font-bold text-white tracking-tight">
+                      Let's <span className="gradient-text">Connect!</span> ✦
+                    </h3>
+                    <p className="text-gray-400 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+                      Tap anywhere to initialize communication protocol, verify credentials, and send a direct inquiry.
+                    </p>
+                  </div>
+
+                  {/* Pulsing button */}
+                  <div className="pt-2 sm:pt-4">
+                    <span className="btn-primary inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white text-sm shadow-lg group-hover:scale-105 transition-transform duration-300">
+                      Tap to Connect <ArrowRight className="w-4 h-4" />
+                    </span>
+                  </div>
+                </div>
               </motion.div>
-            ))}
+            </div>
 
-            {/* Availability Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ delay: 0.7 }}
-              className="p-6 rounded-2xl border border-violet-500/30 relative overflow-hidden"
-              style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.1))' }}
+            {/* BACK FACE: Entire Contact Grid & Form */}
+            <div
+              className={`w-full ${isFlipped ? 'relative' : 'absolute inset-0 pointer-events-none'}`}
+              style={{
+                backfaceVisibility: 'hidden',
+                WebkitBackfaceVisibility: 'hidden',
+                transform: 'rotateY(180deg)',
+                zIndex: isFlipped ? 10 : 0,
+              }}
             >
-              <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full -mr-16 -mt-16 blur-xl" />
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-3">
-                  <Sparkles className="w-5 h-5 text-violet-400" />
-                  <span className="font-bold text-white">Open for Opportunities</span>
-                </div>
-                <p className="text-gray-400 text-sm mb-4">
-                  Actively looking for internships & full-time roles. Let's build something great!
-                </p>
-                <a
-                  href={p.resumeUrl || '#'}
-                  target={p.resumeUrl ? '_blank' : undefined}
-                  rel="noopener noreferrer"
-                  onClick={!p.resumeUrl ? (e) => { e.preventDefault(); alert('Resume URL not set. Go to /vk-studio → Personal Info → Resume URL.'); } : undefined}
-                  className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold text-sm"
+              {/* Back card options bar */}
+              <div className="max-w-6xl mx-auto mb-4 flex justify-between items-center px-2">
+                <button
+                  onClick={() => setIsFlipped(false)}
+                  className="px-4 py-2 glass rounded-xl border border-white/5 text-xs text-violet-400 hover:text-white hover:border-violet-500/30 transition-all duration-300 flex items-center gap-2 font-mono"
                 >
-                  View Resume <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          {/* Right: Form */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            animate={isInView ? { opacity: 1, x: 0 } : {}}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="lg:col-span-3"
-          >
-            <form
-              onSubmit={handleSubmit}
-              className="glass rounded-2xl p-5 sm:p-8 border border-white/8"
-            >
-              <div className="flex items-center gap-3 mb-8">
-                <div className="flex gap-1.5">
-                  <div className="w-3 h-3 rounded-full bg-red-500" />
-                  <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                  <div className="w-3 h-3 rounded-full bg-green-500" />
+                  ← Reset Invitation
+                </button>
+                <div className="flex items-center gap-2 text-[10px] code-font text-gray-600">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-500/70" /> SECURE LINK ACTIVE
                 </div>
-                <span className="code-font text-gray-600 text-xs ml-2">message.ts</span>
               </div>
 
-              {submitted ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-12"
-                >
-                  <div className="text-5xl mb-4">🚀</div>
-                  <h3 className="text-2xl font-bold text-white mb-2">Message Sent!</h3>
-                  <p className="text-gray-400">Thanks for reaching out. I'll get back to you soon.</p>
-                </motion.div>
-              ) : (
-                <div className="space-y-5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div className="space-y-2">
-                      <label className="code-font text-xs text-gray-500">// your name</label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                        className={inputCls}
-                        placeholder="John Doe"
-                      />
+              <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-start">
+                {/* Left: Links + Status */}
+                <div className="lg:col-span-2 space-y-4">
+                  {contactLinks.map((item, i) => (
+                    <div key={i}>
+                      {item.href ? (
+                        <a
+                          href={item.href}
+                          target={item.href.startsWith('http') ? '_blank' : undefined}
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-4 p-4 glass rounded-xl border border-white/5 hover:border-violet-500/30 transition-all card-hover group"
+                          onMouseEnter={e => (e.currentTarget.style.boxShadow = `0 0 30px ${item.glow}`)}
+                          onMouseLeave={e => (e.currentTarget.style.boxShadow = '')}
+                        >
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                            {item.icon}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
+                            <p className="text-white font-semibold text-sm">{item.value}</p>
+                          </div>
+                          <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-violet-400 ml-auto transition-colors" />
+                        </a>
+                      ) : (
+                        <div className="flex items-center gap-4 p-4 glass rounded-xl border border-white/5">
+                          <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center text-white flex-shrink-0`}>
+                            {item.icon}
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
+                            <p className="text-white font-semibold text-sm">{item.value}</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-2">
-                      <label className="code-font text-xs text-gray-500">// your email</label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        required
-                        className={inputCls}
-                        placeholder="john@example.com"
-                      />
-                    </div>
-                  </div>
+                  ))}
 
-                  <div className="space-y-2">
-                    <label className="code-font text-xs text-gray-500">// subject</label>
-                    <input
-                      type="text"
-                      id="subject"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleChange}
-                      required
-                      className={inputCls}
-                      placeholder="Project Inquiry / Collaboration / Just Saying Hi"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="code-font text-xs text-gray-500">// message</label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      value={formData.message}
-                      onChange={handleChange}
-                      required
-                      rows={5}
-                      className={`${inputCls} resize-none`}
-                      placeholder="Tell me about your idea..."
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full py-4 rounded-xl btn-primary text-white font-bold flex items-center justify-center gap-3 ${
-                      isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
-                    }`}
+                  {/* Availability Card */}
+                  <div
+                    className="p-6 rounded-2xl border border-violet-500/30 relative overflow-hidden"
+                    style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(6,182,212,0.1))' }}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-5 h-5" />
-                        Send Message
-                      </>
-                    )}
-                  </button>
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-violet-500/10 rounded-full -mr-16 -mt-16 blur-xl" />
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <Sparkles className="w-5 h-5 text-violet-400" />
+                        <span className="font-bold text-white">Open for Opportunities</span>
+                      </div>
+                      <p className="text-gray-400 text-sm mb-4">
+                        Actively looking for internships & full-time roles. Let's build something great!
+                      </p>
+                      <a
+                        href={p.resumeUrl || '#'}
+                        target={p.resumeUrl ? '_blank' : undefined}
+                        rel="noopener noreferrer"
+                        onClick={!p.resumeUrl ? (e) => { e.preventDefault(); alert('Resume URL not set. Go to /vk-studio → Personal Info → Resume URL.'); } : undefined}
+                        className="btn-primary inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-white font-semibold text-sm"
+                      >
+                        View Resume <ArrowRight className="w-4 h-4" />
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              )}
-            </form>
-          </motion.div>
+
+                {/* Right: Form */}
+                <div className="lg:col-span-3">
+                  <form
+                    onSubmit={handleSubmit}
+                    className="glass rounded-2xl p-5 sm:p-8 border border-white/8"
+                  >
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="flex items-center gap-3">
+                        <div className="flex gap-1.5">
+                          <div className="w-3 h-3 rounded-full bg-red-500" />
+                          <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                          <div className="w-3 h-3 rounded-full bg-green-500" />
+                        </div>
+                        <span className="code-font text-gray-600 text-xs ml-2">message.ts</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setIsFlipped(false)}
+                        className="text-xs text-gray-500 hover:text-violet-400 code-font flex items-center gap-1.5 transition-colors"
+                      >
+                        <RefreshCw className="w-3 h-3" /> Flip Card
+                      </button>
+                    </div>
+
+                    {submitted ? (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="text-center py-12"
+                      >
+                        <div className="text-5xl mb-4">🚀</div>
+                        <h3 className="text-2xl font-bold text-white mb-2">Message Sent!</h3>
+                        <p className="text-gray-400">Thanks for reaching out. I'll get back to you soon.</p>
+                      </motion.div>
+                    ) : (
+                      <div className="space-y-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                          <div className="space-y-2">
+                            <label className="code-font text-xs text-gray-500">// your name</label>
+                            <input
+                              type="text"
+                              id="name"
+                              name="name"
+                              value={formData.name}
+                              onChange={handleChange}
+                              required
+                              className={inputCls}
+                              placeholder="John Doe"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <label className="code-font text-xs text-gray-500">// your email</label>
+                            <input
+                              type="email"
+                              id="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleChange}
+                              required
+                              className={inputCls}
+                              placeholder="john@example.com"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="code-font text-xs text-gray-500">// subject</label>
+                          <input
+                            type="text"
+                            id="subject"
+                            name="subject"
+                            value={formData.subject}
+                            onChange={handleChange}
+                            required
+                            className={inputCls}
+                            placeholder="Project Inquiry / Collaboration"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="code-font text-xs text-gray-500">// message</label>
+                          <textarea
+                            id="message"
+                            name="message"
+                            value={formData.message}
+                            onChange={handleChange}
+                            required
+                            rows={5}
+                            className={`${inputCls} resize-none`}
+                            placeholder="Tell me about your idea..."
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className={`w-full py-4 rounded-xl btn-primary text-white font-bold flex items-center justify-center gap-3 ${
+                            isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                              Sending...
+                            </>
+                          ) : (
+                            <>
+                              <Send className="w-5 h-5" />
+                              Send Message
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
