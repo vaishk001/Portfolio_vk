@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Mail, Linkedin, Github, MapPin, Send, ArrowRight, Sparkles } from 'lucide-react';
 import { usePortfolio } from '../context/PortfolioContext';
 import { supabase, isSupabaseConfigured } from '../context/supabase';
+import { ScratchConnectCard } from './ScratchConnectCard';
 
 const Contact = () => {
   const ref = useRef(null);
@@ -101,6 +102,14 @@ const Contact = () => {
             transition={{ delay: 0.2, duration: 0.6 }}
             className="lg:col-span-2 space-y-4"
           >
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.25 }}
+            >
+              <ScratchConnectCard />
+            </motion.div>
+
             {contactLinks.map((item, i) => (
               <motion.div
                 key={i}
