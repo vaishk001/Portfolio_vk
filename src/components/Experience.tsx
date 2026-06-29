@@ -339,7 +339,7 @@ const Experience = () => {
   return (
     <section 
       id="experience" 
-      className="section-padding bg-gray-950 relative overflow-hidden" 
+      className="section-padding bg-transparent relative overflow-hidden" 
       ref={ref}
       onMouseMove={handleSectionMouseMove}
     >

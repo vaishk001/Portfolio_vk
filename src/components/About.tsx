@@ -55,7 +55,7 @@ const About = () => {
   ];
 
   return (
-    <section id="about" className="section-padding bg-gray-900 relative overflow-hidden" ref={ref}>
+    <section id="about" className="section-padding bg-transparent relative overflow-hidden" ref={ref}>
       {/* Background decoration */}
       <div className="absolute inset-0 bg-[linear-gradient(rgba(124,58,237,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(124,58,237,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-96 h-96 bg-violet-600/5 rounded-full blur-3xl pointer-events-none" />

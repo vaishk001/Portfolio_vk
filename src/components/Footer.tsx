@@ -8,7 +8,7 @@ const Footer = () => {
   const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
   return (
-    <footer className="bg-gray-950 border-t border-white/5 py-12 px-6 relative overflow-hidden">
+    <footer className="bg-transparent border-t border-white/5 py-12 px-6 relative overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(rgba(124,58,237,0.04)_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
       <div className="max-w-6xl mx-auto relative z-10">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 md:gap-10 mb-10">

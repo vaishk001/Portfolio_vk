@@ -69,7 +69,7 @@ const Contact = () => {
   const inputCls = "w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-violet-500/60 focus:bg-white/8 transition-all duration-200 code-font text-sm";
 
   return (
-    <section id="contact" className="section-padding bg-gray-900 relative overflow-hidden" ref={ref}>
+    <section id="contact" className="section-padding bg-transparent relative overflow-hidden" ref={ref}>
       <div className="absolute inset-0 bg-[radial-gradient(rgba(124,58,237,0.06)_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none" />
       <div className="absolute top-0 left-0 w-96 h-96 bg-violet-600/8 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-cyan-500/6 rounded-full blur-3xl pointer-events-none" />

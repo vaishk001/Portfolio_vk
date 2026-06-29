@@ -60,10 +60,12 @@ function LiquidBackground() {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
       {/* Large animated fluid orbs */}
-      <div className="absolute top-[5%] left-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-violet-600/10 to-indigo-600/10 blur-[130px] animate-[float-slow_25s_infinite_ease-in-out]" />
-      <div className="absolute top-[35%] right-[-20%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-br from-cyan-500/8 to-blue-500/8 blur-[150px] animate-[float-slow_30s_infinite_ease-in-out_2s]" />
-      <div className="absolute bottom-[30%] left-[-25%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-tr from-purple-500/5 to-pink-500/5 blur-[130px] animate-[float-slow_28s_infinite_ease-in-out_4s]" />
-      <div className="absolute bottom-[5%] right-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-br from-emerald-500/5 to-teal-500/5 blur-[130px] animate-[float-slow_22s_infinite_ease-in-out_1s]" />
+      <div className="absolute top-[2%] left-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-violet-600/15 to-fuchsia-600/10 blur-[130px] animate-[float-slow_22s_infinite_ease-in-out]" />
+      <div className="absolute top-[16%] right-[-20%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-br from-cyan-500/12 to-blue-600/10 blur-[150px] animate-[float-slow_26s_infinite_ease-in-out_2s]" />
+      <div className="absolute top-[38%] left-[-20%] w-[70vw] h-[70vw] rounded-full bg-gradient-to-tr from-indigo-600/10 to-purple-600/10 blur-[140px] animate-[float-slow_28s_infinite_ease-in-out_4s]" />
+      <div className="absolute top-[58%] right-[-15%] w-[65vw] h-[65vw] rounded-full bg-gradient-to-br from-pink-500/8 to-violet-500/8 blur-[130px] animate-[float-slow_24s_infinite_ease-in-out_1s]" />
+      <div className="absolute top-[78%] left-[-15%] w-[60vw] h-[60vw] rounded-full bg-gradient-to-tr from-cyan-500/8 to-emerald-500/6 blur-[130px] animate-[float-slow_25s_infinite_ease-in-out_3s]" />
+      <div className="absolute bottom-[1%] right-[-10%] w-[55vw] h-[55vw] rounded-full bg-gradient-to-br from-violet-600/12 to-fuchsia-500/8 blur-[120px] animate-[float-slow_23s_infinite_ease-in-out_5s]" />
     </div>
   );
 }
@@ -71,7 +73,7 @@ function LiquidBackground() {
 /* ── Portfolio page ── */
 function Portfolio() {
   return (
-    <div className="min-h-screen bg-gray-950 overflow-x-hidden relative">
+    <div className="min-h-screen bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#0b0c16] via-[#050508] to-black overflow-x-hidden relative">
       {/* Global Noise & Liquid Backdrop */}
       <div className="noise-overlay" />
       <LiquidBackground />

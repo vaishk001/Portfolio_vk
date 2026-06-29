@@ -260,7 +260,7 @@ const Hero = () => {
   return (
     <>
       <section 
-        className="min-h-screen flex flex-col items-center justify-start relative overflow-hidden bg-gray-950 neural-bg select-none"
+        className="min-h-screen flex flex-col items-center justify-start relative overflow-hidden bg-transparent neural-bg select-none"
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >

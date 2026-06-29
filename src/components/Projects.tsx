@@ -294,7 +294,7 @@ const Projects = () => {
   const filtered = filter === 'All' ? projects : projects.filter(p => p.category === filter);
 
   return (
-    <section id="projects" className="section-padding bg-gray-900 relative overflow-hidden" ref={ref}>
+    <section id="projects" className="section-padding bg-transparent relative overflow-hidden" ref={ref}>
       <div className="absolute inset-0 bg-[linear-gradient(rgba(6,182,212,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(6,182,212,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
       <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-violet-600/5 rounded-full blur-3xl pointer-events-none" />
